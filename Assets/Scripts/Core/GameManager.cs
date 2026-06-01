@@ -10,6 +10,7 @@ public class GameManager : MonoBehaviour
     [Header("UI")]
     public TMP_Text coinText;
     public TMP_Text distanceText;
+    public TMP_Text restartText;
     
     private bool _gameOver;
     private int _totalCoins;
@@ -34,9 +35,13 @@ public class GameManager : MonoBehaviour
         if (!_gameOver)
             UpdateDistanceUI();
 
-        if (_gameOver && Input.anyKeyDown)
+        if (_gameOver)
         {
-            Restart();
+            restartText.gameObject.SetActive(true);
+            if (Input.anyKeyDown)
+            {
+                Restart();
+            }
         }
     }
     
