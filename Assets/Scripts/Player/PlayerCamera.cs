@@ -10,6 +10,10 @@ public class PlayerCamera : MonoBehaviour
     public float maxSpeed = 100f;
 
     private float currentSpeed;
+    private float _distanceTraveled;
+
+    public float DistanceTraveled => _distanceTraveled;
+
     void Start()
     {
         currentSpeed = startSpeed;
@@ -18,6 +22,8 @@ public class PlayerCamera : MonoBehaviour
     void Update()
     {
         currentSpeed = Mathf.Min(currentSpeed+acceleration*Time.deltaTime, maxSpeed);
-        transform.position += new Vector3(currentSpeed * Time.deltaTime, 0f, 0f);
+        float deltaX = currentSpeed * Time.deltaTime;
+        transform.position += new Vector3(deltaX, 0f, 0f);
+        _distanceTraveled += deltaX;
     }
 }

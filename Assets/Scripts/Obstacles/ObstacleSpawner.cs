@@ -37,15 +37,19 @@ public class ObstacleSpawner : MonoBehaviour, ISpawner
         return nextSpawnCooldown <= 0f;
     }
     
-    public void Spawn(float xPosition)
+    public SpawnOccupancy Spawn(float xPosition)
     {
+        const float obstacleHalfWidth = 0.25f;
+
         float spawnY = Random.Range(minHeight, maxHeight);
         Vector3 pos = new Vector3(xPosition, spawnY, 0f);
-        
+
         GameObject obstacle = Instantiate(obstaclePrefab, pos, Quaternion.identity);
         activeObstacles.Add(obstacle);
-        
+
         nextSpawnCooldown = Random.Range(minSpawnInterval, maxSpawnInterval);
+
+        return SpawnOccupancy.Point(xPosition, obstacleHalfWidth);
     }
     
     void CleanupObstacles()

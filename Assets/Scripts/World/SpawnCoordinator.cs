@@ -14,7 +14,10 @@ public class SpawnCoordinator : MonoBehaviour
     private List<ISpawner> spawners = new List<ISpawner>();
     private Transform cameraTransform;
     private float checkTimer;
-    private float lastSpawnX = -999f;
+    private float lastOccupiedMaxX = -999f;
+
+    // Coin circle patterns can extend slightly behind the spawn anchor.
+    const float MaxSpawnBackExtent = 0.7f;
     
     void Awake()
     {
@@ -51,22 +54,22 @@ public class SpawnCoordinator : MonoBehaviour
     void TrySpawn()
     {
         float spawnX = cameraTransform.position.x + spawnDistance;
-        
-        // Enforce minimum gap between any spawns
-        if (spawnX - lastSpawnX < minSpawnGap)
-        {
+
+        // Enforce minimum gap using the full occupied X range of the previous spawn.
+        if (spawnX < lastOccupiedMaxX + minSpawnGap + MaxSpawnBackExtent)
             return;
-        }
-        
-        // Check each spawner
+
         foreach (ISpawner spawner in spawners)
         {
-            if (spawner.CanSpawn())
-            {
-                spawner.Spawn(spawnX);
-                lastSpawnX = spawnX;
-                break; // Only spawn one thing per check
-            }
+            if (!spawner.CanSpawn())
+                continue;
+
+            SpawnOccupancy occupancy = spawner.Spawn(spawnX);
+            if (!occupancy.IsValid)
+                continue;
+
+            lastOccupiedMaxX = occupancy.MaxX;
+            break;
         }
     }
 }

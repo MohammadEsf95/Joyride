@@ -9,9 +9,11 @@ public class GameManager : MonoBehaviour
     
     [Header("UI")]
     public TMP_Text coinText;
+    public TMP_Text distanceText;
     
     private bool _gameOver;
     private int _totalCoins;
+    private PlayerCamera _playerCamera;
     
     void Awake()
     {
@@ -21,8 +23,17 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
     }
 
+    void Start()
+    {
+        _playerCamera = FindObjectOfType<PlayerCamera>();
+        UpdateDistanceUI();
+    }
+
     void Update()
     {
+        if (!_gameOver)
+            UpdateDistanceUI();
+
         if (_gameOver && Input.anyKeyDown)
         {
             Restart();
@@ -39,6 +50,15 @@ public class GameManager : MonoBehaviour
     {
         if (coinText != null)
             coinText.text = "Score: " + _totalCoins;
+    }
+
+    void UpdateDistanceUI()
+    {
+        if (distanceText == null || _playerCamera == null)
+            return;
+
+        int meters = Mathf.FloorToInt(_playerCamera.DistanceTraveled);
+        distanceText.text = meters + " m";
     }
 
     public void GameOver()

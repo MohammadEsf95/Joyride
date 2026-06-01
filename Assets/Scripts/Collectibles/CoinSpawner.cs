@@ -35,46 +35,47 @@ public class CoinSpawner : MonoBehaviour, ISpawner
         return nextSpawnCooldown <= 0f;
     }
     
-    public void Spawn(float xPosition)
+    public SpawnOccupancy Spawn(float xPosition)
     {
-        SpawnRandomPattern(xPosition);
+        SpawnOccupancy occupancy = SpawnRandomPattern(xPosition);
         nextSpawnCooldown = Random.Range(minSpawnInterval, maxSpawnInterval);
+        return occupancy;
     }
     
-    void SpawnRandomPattern(float startX)
+    SpawnOccupancy SpawnRandomPattern(float startX)
     {
         int patternType = Random.Range(0, 4);
         
         switch (patternType)
         {
             case 0:
-                SpawnLinearHorizontal(startX);
-                break;
+                return SpawnLinearHorizontal(startX);
             case 1:
-                SpawnLinearVertical(startX);
-                break;
+                return SpawnLinearVertical(startX);
             case 2:
-                SpawnCurvePattern(startX);
-                break;
-            case 3:
-                SpawnCirclePattern(startX);
-                break;
+                return SpawnCurvePattern(startX);
+            default:
+                return SpawnCirclePattern(startX);
         }
     }
     
-    void SpawnLinearHorizontal(float startX)
+    SpawnOccupancy SpawnLinearHorizontal(float startX)
     {
         float y = Random.Range(minHeight, maxHeight);
         int coinCount = Random.Range(5, 10);
+        float maxX = startX;
         
         for (int i = 0; i < coinCount; i++)
         {
             Vector3 pos = new Vector3(startX + i * coinSpacing, y, 0f);
             SpawnCoin(pos);
+            maxX = pos.x;
         }
+
+        return new SpawnOccupancy { MinX = startX, MaxX = maxX };
     }
     
-    void SpawnLinearVertical(float startX)
+    SpawnOccupancy SpawnLinearVertical(float startX)
     {
         float startY = Random.Range(minHeight, maxHeight - 3f);
         int coinCount = Random.Range(4, 7);
@@ -84,31 +85,36 @@ public class CoinSpawner : MonoBehaviour, ISpawner
             Vector3 pos = new Vector3(startX, startY + i * coinSpacing, 0f);
             SpawnCoin(pos);
         }
+
+        return SpawnOccupancy.Point(startX);
     }
     
-    void SpawnCurvePattern(float startX)
+    SpawnOccupancy SpawnCurvePattern(float startX)
     {
-        float curveAmplitude = 1f;  // Maximum height deviation from base
-    
-        // Ensure baseY leaves room for the curve to go up and down
+        float curveAmplitude = 1f;
         float baseY = Random.Range(minHeight + curveAmplitude, maxHeight - curveAmplitude);
+        float maxX = startX;
     
         for (int i = 0; i < 8; i++)
         {
             float t = i / 7f;
             float curveHeight = Mathf.Sin(t * Mathf.PI) * curveAmplitude;
             float y = baseY + curveHeight;
-        
             Vector3 position = new Vector3(startX + i * 1f, y, 0f);
             SpawnCoin(position);
+            maxX = position.x;
         }
+
+        return new SpawnOccupancy { MinX = startX, MaxX = maxX };
     }
     
-    void SpawnCirclePattern(float startX)
+    SpawnOccupancy SpawnCirclePattern(float startX)
     {
         int coinCount = 8;
         float radius = 0.7f;
         float centerY = Random.Range(minHeight + radius, maxHeight - radius);
+        float minX = startX;
+        float maxX = startX;
         
         for (int i = 0; i < coinCount; i++)
         {
@@ -116,7 +122,11 @@ public class CoinSpawner : MonoBehaviour, ISpawner
             float x = startX + Mathf.Cos(angle) * radius;
             float y = centerY + Mathf.Sin(angle) * radius;
             SpawnCoin(new Vector3(x, y, 0f));
+            minX = Mathf.Min(minX, x);
+            maxX = Mathf.Max(maxX, x);
         }
+
+        return new SpawnOccupancy { MinX = minX, MaxX = maxX };
     }
     
     void SpawnCoin(Vector3 position)

@@ -44,7 +44,7 @@ public class EnemySpawner : MonoBehaviour, ISpawner
         return Random.value <= spawnChance;
     }
 
-    public void Spawn(float spawnX)
+    public SpawnOccupancy Spawn(float spawnX)
     {
         float minY = ground != null ? ground.position.y : -3f;
         float maxY = ceiling != null ? ceiling.position.y : 4.5f;
@@ -62,6 +62,7 @@ public class EnemySpawner : MonoBehaviour, ISpawner
 
         enemyAlive = true;
         lastSpawnTime = Time.time;
+        return SpawnOccupancy.Point(spawnX);
     }
 
     public void OnEnemyFinished()

@@ -20,20 +20,21 @@ public class ShieldSpawner : MonoBehaviour, ISpawner
         return cooldownReady && chanceSuccess;
     }
 
-    public void Spawn(float spawnX)
+    public SpawnOccupancy Spawn(float spawnX)
     {
         if (shieldPrefab == null)
         {
             Debug.LogError("ShieldSpawner: shieldPrefab is not assigned!");
-            return;
+            return SpawnOccupancy.Invalid;
         }
 
         float spawnY = Random.Range(minY, maxY);
         Vector3 spawnPosition = new Vector3(spawnX, spawnY, 0f);
-        
-        GameObject shield = Instantiate(shieldPrefab, spawnPosition, Quaternion.identity);
+
+        Instantiate(shieldPrefab, spawnPosition, Quaternion.identity);
         lastSpawnTime = Time.time;
-        
+
         Debug.Log($"ShieldSpawner: Spawned shield at {spawnPosition}");
+        return SpawnOccupancy.Point(spawnX);
     }
 }
