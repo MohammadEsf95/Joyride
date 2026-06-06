@@ -6,18 +6,18 @@ public class ShooterEnemy : MonoBehaviour
     [Header("Movement")]
     [SerializeField] private int minMoves = 2;
     [SerializeField] private int maxMoves = 4;
-    [SerializeField] private float moveDistance = 1.5f;
     [SerializeField] private float moveDuration = 0.45f;
     [SerializeField] private AnimationCurve moveCurve;
     [SerializeField] private float screenHoldOffset = 9f;
 
     [Header("Shooting")]
     [SerializeField] private int bulletsPerBurst = 3;
-    [SerializeField] private float shootInterval = 0.25f;
+    [SerializeField] private float shootInterval = 0.5f;
     [SerializeField] private float bulletSpeed = 11f;
     [SerializeField] private GameObject bulletPrefab;
 
     private Camera mainCamera;
+    private Transform playerTransform;
 
     void Awake()
     {
@@ -30,16 +30,15 @@ public class ShooterEnemy : MonoBehaviour
     void Start()
     {
         mainCamera = Camera.main;
+        Player player = FindObjectOfType<Player>();
+        playerTransform = player != null ? player.transform : null;
         EnsureVisual();
         StartCoroutine(EnemyRoutine());
     }
 
     void LateUpdate()
     {
-        if (mainCamera == null)
-        {
-            return;
-        }
+        if (mainCamera == null) return;
 
         Vector3 position = transform.position;
         position.x = mainCamera.transform.position.x + screenHoldOffset;
@@ -69,10 +68,10 @@ public class ShooterEnemy : MonoBehaviour
 
         for (int i = 0; i < moveCount; i++)
         {
-            float direction = Random.value < 0.5f ? moveDistance : -moveDistance;
-            float desiredY = transform.position.y + direction;
-            float clampedY = GetClampedTargetY(desiredY);
-            Vector3 targetPos = new Vector3(transform.position.x, clampedY, 0f);
+            float targetY = playerTransform != null
+                ? GetClampedTargetY(playerTransform.position.y)
+                : GetClampedTargetY(transform.position.y);
+            Vector3 targetPos = new Vector3(transform.position.x, targetY, 0f);
 
             yield return MoveStep(targetPos);
             yield return ShootBurst();
@@ -128,7 +127,6 @@ public class ShooterEnemy : MonoBehaviour
             {
                 bullet.Initialize(Vector2.left, bulletSpeed);
             }
-
             return;
         }
 
@@ -151,10 +149,7 @@ public class ShooterEnemy : MonoBehaviour
 
     void EnsureVisual()
     {
-        if (GetComponent<SpriteRenderer>() != null)
-        {
-            return;
-        }
+        if (GetComponent<SpriteRenderer>() != null) return;
 
         SpriteRenderer spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
         spriteRenderer.sprite = CreatePlaceholderSprite(new Color(0.85f, 0.15f, 0.2f, 1f));
@@ -185,17 +180,11 @@ public class ShooterEnemy : MonoBehaviour
                 float distance = Vector2.Distance(point, center);
 
                 if (distance > outerRadius)
-                {
                     pixels[y * resolution + x] = Color.clear;
-                }
                 else if (distance > innerRadius)
-                {
                     pixels[y * resolution + x] = color;
-                }
                 else
-                {
                     pixels[y * resolution + x] = Color.Lerp(color, Color.white, 0.35f);
-                }
             }
         }
 

@@ -26,29 +26,16 @@ public class EnemySpawner : MonoBehaviour, ISpawner
 
     public bool CanSpawn()
     {
-        if (enemyAlive)
-        {
-            return false;
-        }
-
-        if (Time.time < firstSpawnDelay)
-        {
-            return false;
-        }
-
-        if (Time.time - lastSpawnTime < minTimeBetweenSpawns)
-        {
-            return false;
-        }
-
+        if (enemyAlive) return false;
+        if (Time.time < firstSpawnDelay) return false;
+        if (Time.time - lastSpawnTime < minTimeBetweenSpawns) return false;
         return Random.value <= spawnChance;
     }
 
     public SpawnOccupancy Spawn(float spawnX)
     {
-        float minY = ground != null ? ground.position.y : -3f;
-        float maxY = ceiling != null ? ceiling.position.y : 4.5f;
-        float spawnY = Random.Range(minY, maxY);
+        Player player = FindObjectOfType<Player>();
+        float spawnY = player != null ? player.transform.position.y : 0f;
         Vector3 spawnPosition = new Vector3(spawnX, spawnY, 0f);
 
         if (enemyPrefab != null)
